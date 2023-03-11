@@ -25,6 +25,7 @@ object NetworkUtil {
         }
     }
 
+    /*
     suspend fun isMainlandChina(): Boolean {
         return runCatching {
             val result = client.get(LOC_CHECK_URL).bodyAsText()
@@ -42,5 +43,9 @@ object NetworkUtil {
 
             false
         }.getOrDefault(true)
+    }
+    */
+    suspend fun isMainlandChina(): Boolean {
+        return false
     }
 }
