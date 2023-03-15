@@ -19,6 +19,8 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
+import androidx.media3.exoplayer.mediacodec.MediaCodecInfo
 import androidx.media3.exoplayer.video.VideoRendererEventListener
 import dev.aaa1115910.bv.R
 import dev.aaa1115910.bv.screen.VideoPlayerScreen
@@ -27,6 +29,22 @@ import dev.aaa1115910.bv.util.fInfo
 import dev.aaa1115910.bv.viewmodel.PlayerViewModel
 import mu.KotlinLogging
 import org.koin.androidx.viewmodel.ext.android.viewModel
+
+class CustomMediaCodecSelector : MediaCodecSelector {
+    override fun getDecoderInfos(
+        mimeType: String,
+        requiresSecureDecoder: Boolean,
+        requiresTunnelingDecoder: Boolean
+    ): MutableList<MediaCodecInfo> {
+        val decoderInfos = MediaCodecUtil.getDecoderInfos(
+            mimeType,
+            requiresSecureDecoder,
+            requiresTunnelingDecoder
+        )
+        // Filter out decoders that do not support adaptive playback
+        return decoderInfos.filter { it.adaptive } as MutableList<MediaCodecInfo>
+    }
+}
 
 class VideoPlayerActivity : ComponentActivity() {
     companion object {
@@ -84,10 +102,11 @@ class VideoPlayerActivity : ComponentActivity() {
                     MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY
                 )
                 out.add(renderer)
+                val cms = CustomMediaCodecSelector()
                 super.buildVideoRenderers(
                     context,
                     extensionRendererMode,
-                    mediaCodecSelector,
+                    cms,
                     enableDecoderFallback,
                     eventHandler,
                     eventListener,
